@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - Storing tick level data in db
-
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 
 from kiteconnect import KiteTicker, KiteConnect
 import datetime
@@ -14,7 +8,7 @@ import sqlite3
 
 cwd = os.chdir("D:\\Udemy\\Zerodha KiteConnect API\\1_account_authorization")
 
-#generate trading session
+
 access_token = open("access_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])
@@ -52,13 +46,13 @@ instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 def tokenLookup(instrument_df,symbol_list):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     token_list = []
     for symbol in symbol_list:
         token_list.append(int(instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]))
     return token_list
 
-#####################update ticker list######################################
+
 tickers = ["ZEEL","WIPRO","VEDL","ULTRACEMCO","UPL","TITAN","TECHM","TATASTEEL",
            "TATAMOTORS","TCS","SUNPHARMA","SBIN","SHREECEM","RELIANCE","POWERGRID",
            "ONGC","NESTLEIND","NTPC","MARUTI","M&M","LT","KOTAKBANK","JSWSTEEL","INFY",
@@ -66,13 +60,12 @@ tickers = ["ZEEL","WIPRO","VEDL","ULTRACEMCO","UPL","TITAN","TECHM","TATASTEEL",
            "HEROMOTOCO","HDFCBANK","HCLTECH","GRASIM","GAIL","EICHERMOT","DRREDDY",
            "COALINDIA","CIPLA","BRITANNIA","INFRATEL","BHARTIARTL","BPCL","BAJAJFINSV",
            "BAJFINANCE","BAJAJ-AUTO","AXISBANK","ASIANPAINT","ADANIPORTS"]
-#############################################################################
 
-#create KiteTicker object
+
 kws = KiteTicker(key_secret[0],kite.access_token)
 tokens = tokenLookup(instrument_df,tickers)
 
-#create table
+
 create_tables(tokens)
 
 
@@ -96,13 +89,3 @@ while True:
 
 db.close()
 
-"""
-c.execute('SELECT name from sqlite_master where type= "table"')
-c.fetchall()
-
-c.execute('''PRAGMA table_info(TOKEN975873)''')
-c.fetchall()
-
-for m in c.execute('''SELECT * FROM TOKEN975873'''):
-    print(m)
-"""

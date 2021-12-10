@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - Supertrend implementation
 
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 from kiteconnect import KiteConnect
 import pandas as pd
 import datetime as dt
@@ -23,21 +18,21 @@ instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 def instrumentLookup(instrument_df,symbol):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     try:
         return instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]
     except:
         return -1
 
 def fetchOHLC(ticker,interval,duration):
-    """extracts historical data and outputs in the form of dataframe"""
+    
     instrument = instrumentLookup(instrument_df,ticker)
     data = pd.DataFrame(kite.historical_data(instrument,dt.date.today()-dt.timedelta(duration), dt.date.today(),interval))
     data.set_index("date",inplace=True)
     return data
 
 def atr(DF,n):
-    "function to calculate True Range and Average True Range"
+    
     df = DF.copy()
     df['H-L']=abs(df['high']-df['low'])
     df['H-PC']=abs(df['high']-df['close'].shift(1))
@@ -47,9 +42,7 @@ def atr(DF,n):
     return df['ATR']
 
 def supertrend(DF,n,m):
-    """function to calculate Supertrend given historical candle data
-        n = n day ATR - usually 7 day ATR is used
-        m = multiplier - usually 2 or 3 is used"""
+    
     df = DF.copy()
     df['ATR'] = atr(df,n)
     df["B-U"]=((df['high']+df['low'])/2) + m*df['ATR'] 

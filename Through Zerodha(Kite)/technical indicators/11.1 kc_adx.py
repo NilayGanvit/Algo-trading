@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - ADX implementation
 
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 from kiteconnect import KiteConnect
 import logging
 import os
@@ -19,7 +14,7 @@ kite.set_access_token(access_token)
 
 
 def instrumentLookup(instrument_df,symbol):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     try:
         return instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]
     except:
@@ -27,7 +22,7 @@ def instrumentLookup(instrument_df,symbol):
 
 
 def fetchOHLC(ticker,interval,duration):
-    """extracts historical data and outputs in the form of dataframe"""
+    
     instrument = instrumentLookup(instrument_df,ticker)
     data = pd.DataFrame(kite.historical_data(instrument,dt.date.today()-dt.timedelta(duration), dt.date.today(),interval))
     data.set_index("date",inplace=True)
@@ -35,7 +30,7 @@ def fetchOHLC(ticker,interval,duration):
 
 
 def adx(DF,n):
-    "function to calculate ADX"
+    
     df2 = DF.copy()
     df2['H-L']=abs(df2['high']-df2['low'])
     df2['H-PC']=abs(df2['high']-df2['close'].shift(1))

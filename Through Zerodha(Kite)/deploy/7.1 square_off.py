@@ -1,28 +1,23 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - auto square off
 
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 from kiteconnect import KiteConnect
 import os
 import pandas as pd
 
 cwd = os.chdir("D:\\Udemy\\Zerodha KiteConnect API\\1_account_authorization")
 
-#generate trading session
+
 access_token = open("access_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])
 kite.set_access_token(access_token)
 
-#get dump of all NSE instruments
+
 instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 
 def placeMarketOrder(symbol,buy_sell,quantity):    
-    # Place an intraday market order on NSE
+    #
     if buy_sell == "buy":
         t_type=kite.TRANSACTION_TYPE_BUY
     elif buy_sell == "sell":
@@ -40,7 +35,7 @@ def CancelOrder(order_id):
     kite.cancel_order(order_id=order_id,
                     variety=kite.VARIETY_REGULAR)  
 
-#fetching orders and position information   
+   
 a,b = 0,0
 while a < 10:
     try:
@@ -57,7 +52,7 @@ while b < 10:
         print("can't extract order data..retrying")
         b+=1
 
-#closing all open position      
+      
 for i in range(len(pos_df)):
     ticker = pos_df["tradingsymbol"].values[i]
     if pos_df["quantity"].values[i] >0:
@@ -67,7 +62,7 @@ for i in range(len(pos_df)):
         quantity = abs(pos_df["quantity"].values[i])
         placeMarketOrder(ticker,"buy", quantity)
 
-#closing all pending orders
+
 pending = ord_df[ord_df['status'].isin(["TRIGGER PENDING","OPEN"])]["order_id"].tolist()
 drop = []
 attempt = 0

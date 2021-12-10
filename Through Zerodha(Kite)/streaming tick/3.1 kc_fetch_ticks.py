@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - fetching tick data from db and converting to candles
 
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 from kiteconnect import KiteConnect
 import pandas as pd
 import os
@@ -11,20 +6,20 @@ import sqlite3
 
 cwd = os.chdir("D:\\Udemy\\Zerodha KiteConnect API\\1_account_authorization")
 
-#generate trading session
+
 access_token = open("access_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])
 kite.set_access_token(access_token)
 
 
-#get dump of all NSE instruments
+
 instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 
 def instrumentLookup(instrument_df,symbol):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     try:
         return instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]
     except:

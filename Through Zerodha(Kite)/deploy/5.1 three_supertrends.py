@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - Supertrend Strategy
 
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 from kiteconnect import KiteConnect
 import os
 import datetime as dt
@@ -13,20 +8,20 @@ import time
 
 cwd = os.chdir("D:\\Udemy\\Zerodha KiteConnect API\\1_account_authorization")
 
-#generate trading session
+
 access_token = open("access_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])
 kite.set_access_token(access_token)
 
 
-#get dump of all NSE instruments
+
 instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 
 def instrumentLookup(instrument_df,symbol):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     try:
         return instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]
     except:
@@ -34,7 +29,7 @@ def instrumentLookup(instrument_df,symbol):
 
 
 def fetchOHLC(ticker,interval,duration):
-    """extracts historical data and outputs in the form of dataframe"""
+    
     instrument = instrumentLookup(instrument_df,ticker)
     data = pd.DataFrame(kite.historical_data(instrument,dt.date.today()-dt.timedelta(duration), dt.date.today(),interval))
     data.set_index("date",inplace=True)
@@ -42,7 +37,7 @@ def fetchOHLC(ticker,interval,duration):
 
 
 def atr(DF,n):
-    "function to calculate True Range and Average True Range"
+    
     df = DF.copy()
     df['H-L']=abs(df['high']-df['low'])
     df['H-PC']=abs(df['high']-df['close'].shift(1))
@@ -53,9 +48,7 @@ def atr(DF,n):
 
 
 def supertrend(DF,n,m):
-    """function to calculate Supertrend given historical candle data
-        n = n day ATR - usually 7 day ATR is used
-        m = multiplier - usually 2 or 3 is used"""
+    
     df = DF.copy()
     df['ATR'] = atr(df,n)
     df["B-U"]=((df['high']+df['low'])/2) + m*df['ATR'] 
@@ -94,7 +87,7 @@ def supertrend(DF,n,m):
 
 
 def st_dir_refresh(ohlc,ticker):
-    """function to check for supertrend reversal"""
+    
     global st_dir
     if ohlc["st1"][-1] > ohlc["close"][-1] and ohlc["st1"][-2] < ohlc["close"][-2]:
         st_dir[ticker][0] = "red"
@@ -110,7 +103,7 @@ def st_dir_refresh(ohlc,ticker):
         st_dir[ticker][2] = "green"
 
 def sl_price(ohlc):
-    """function to calculate stop loss based on supertrends"""
+    
     st = ohlc.iloc[-1,[-3,-2,-1]]
     if st.min() > ohlc["close"][-1]:
         sl = (0.6*st.sort_values(ascending = True)[0]) + (0.4*st.sort_values(ascending = True)[1])
@@ -119,7 +112,7 @@ def sl_price(ohlc):
     return round(sl,1)
 
 def placeSLOrder(symbol,buy_sell,quantity,sl_price):    
-    # Place an intraday stop loss order on NSE
+    
     if buy_sell == "buy":
         t_type=kite.TRANSACTION_TYPE_BUY
         t_type_sl=kite.TRANSACTION_TYPE_SELL
@@ -145,7 +138,7 @@ def placeSLOrder(symbol,buy_sell,quantity,sl_price):
 
 
 def ModifyOrder(order_id,price):    
-    # Modify order given order id
+    
     kite.modify_order(order_id=order_id,
                     price=price,
                     trigger_price=price,
@@ -200,18 +193,17 @@ def main(capital):
         except:
             print("API error for ticker :",ticker)
             
-#############################################################################################################
-#############################################################################################################
+
 tickers = ["SUNPHARMA","CIPLA","NTPC","INFRATEL","INDUSINDBK","HEROMOTOCO","BAJFINANCE",
            "HCLTECH","DRREDDY","VEDL","SHREECEM","TITAN","TCS"] 
-#tickers to track - recommended to use max movers from previous day
-capital = 3000 #position size
-st_dir = {} #directory to store super trend status for each ticker
+
+capital = 3000 
+st_dir = {} 
 for ticker in tickers:
     st_dir[ticker] = ["None","None","None"]    
     
 starttime=time.time()
-timeout = time.time() + 60*60*1  # 60 seconds times 360 meaning 6 hrs
+timeout = time.time() + 60*60*1  
 while time.time() <= timeout:
     try:
         main(capital)

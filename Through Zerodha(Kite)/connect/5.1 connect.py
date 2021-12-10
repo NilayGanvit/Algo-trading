@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha kiteconnect automated authentication
-
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 
 from kiteconnect import KiteConnect
 from selenium import webdriver
@@ -41,7 +35,7 @@ def autologin():
 
 autologin()
 
-#generating and storing access token - valid till 6 am the next day
+
 request_token = open("request_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])

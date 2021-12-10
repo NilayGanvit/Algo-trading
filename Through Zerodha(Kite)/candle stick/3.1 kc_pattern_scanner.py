@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Zerodha Kite Connect - candlestick pattern scanner
-
-@author: Mayank Rasu (http://rasuquant.com/wp/)
-"""
 
 from kiteconnect import KiteConnect
 import pandas as pd
@@ -14,39 +8,39 @@ import numpy as np
 
 cwd = os.chdir("D:\\Udemy\\Zerodha KiteConnect API\\1_account_authorization")
 
-#generate trading session
+
 access_token = open("access_token.txt",'r').read()
 key_secret = open("api_key.txt",'r').read().split()
 kite = KiteConnect(api_key=key_secret[0])
 kite.set_access_token(access_token)
 
-#get dump of all NSE instruments
+
 instrument_dump = kite.instruments("NSE")
 instrument_df = pd.DataFrame(instrument_dump)
 
 def instrumentLookup(instrument_df,symbol):
-    """Looks up instrument token for a given script from instrument dump"""
+    
     try:
         return instrument_df[instrument_df.tradingsymbol==symbol].instrument_token.values[0]
     except:
         return -1
 
 def fetchOHLC(ticker,interval,duration):
-    """extracts historical data and outputs in the form of dataframe"""
+    
     instrument = instrumentLookup(instrument_df,ticker)
     data = pd.DataFrame(kite.historical_data(instrument,dt.date.today()-dt.timedelta(duration), dt.date.today(),interval))
     data.set_index("date",inplace=True)
     return data
 
 def doji(ohlc_df):    
-    """returns dataframe with doji candle column"""
+    
     df = ohlc_df.copy()
     avg_candle_size = abs(df["close"] - df["open"]).median()
     df["doji"] = abs(df["close"] - df["open"]) <=  (0.05 * avg_candle_size)
     return df
 
 def maru_bozu(ohlc_df):    
-    """returns dataframe with maru bozu candle column"""
+    
     df = ohlc_df.copy()
     avg_candle_size = abs(df["close"] - df["open"]).median()
     df["h-c"] = df["high"]-df["close"]
@@ -61,7 +55,7 @@ def maru_bozu(ohlc_df):
     return df
 
 def hammer(ohlc_df):    
-    """returns dataframe with hammer candle column"""
+    
     df = ohlc_df.copy()
     df["hammer"] = (((df["high"] - df["low"])>3*(df["open"] - df["close"])) & \
                    ((df["close"] - df["low"])/(.001 + df["high"] - df["low"]) > 0.6) & \
@@ -71,7 +65,7 @@ def hammer(ohlc_df):
 
 
 def shooting_star(ohlc_df):    
-    """returns dataframe with shooting star candle column"""
+    
     df = ohlc_df.copy()
     df["sstar"] = (((df["high"] - df["low"])>3*(df["open"] - df["close"])) & \
                    ((df["high"] - df["close"])/(.001 + df["high"] - df["low"]) > 0.6) & \
@@ -80,7 +74,7 @@ def shooting_star(ohlc_df):
     return df
 
 def levels(ohlc_day):    
-    """returns pivot point and support/resistance levels"""
+    
     high = round(ohlc_day["high"][-1],2)
     low = round(ohlc_day["low"][-1],2)
     close = round(ohlc_day["close"][-1],2)
@@ -94,7 +88,7 @@ def levels(ohlc_day):
     return (pivot,r1,r2,r3,s1,s2,s3)
 
 def trend(ohlc_df,n):
-    "function to assess the trend by analyzing each candle"
+    
     df = ohlc_df.copy()
     df["up"] = np.where(df["low"]>=df["low"].shift(1),1,0)
     df["dn"] = np.where(df["high"]<=df["high"].shift(1),1,0)
@@ -108,7 +102,7 @@ def trend(ohlc_df,n):
         return None
    
 def res_sup(ohlc_df,ohlc_day):
-    """calculates closest resistance and support levels for a given candle"""
+    
     level = ((ohlc_df["close"][-1] + ohlc_df["open"][-1])/2 + (ohlc_df["high"][-1] + ohlc_df["low"][-1])/2)/2
     p,r1,r2,r3,s1,s2,s3 = levels(ohlc_day)
     l_r1=level-r1
@@ -124,7 +118,7 @@ def res_sup(ohlc_df,ohlc_day):
     return (eval('{}'.format(res)), eval('{}'.format(sup)))
 
 def candle_type(ohlc_df):    
-    """returns the candle type of the last candle of an OHLC DF"""
+    
     candle = None
     if doji(ohlc_df)["doji"][-1] == True:
         candle = "doji"    
@@ -139,7 +133,7 @@ def candle_type(ohlc_df):
     return candle
 
 def candle_pattern(ohlc_df,ohlc_day):    
-    """returns the candle pattern identified"""
+    
     pattern = None
     signi = "low"
     avg_candle_size = abs(ohlc_df["close"] - ohlc_df["open"]).median()
@@ -202,7 +196,7 @@ def candle_pattern(ohlc_df,ohlc_day):
        
     return "Significance - {}, Pattern - {}".format(signi,pattern)
 
-##############################################################################################
+
 tickers = ["ZEEL","WIPRO","VEDL","ULTRACEMCO","UPL","TITAN","TECHM","TATASTEEL",
            "TATAMOTORS","TCS","SUNPHARMA","SBIN","SHREECEM","RELIANCE","POWERGRID",
            "ONGC","NESTLEIND","NTPC","MARUTI","M&M","LT","KOTAKBANK","JSWSTEEL","INFY",
@@ -251,14 +245,14 @@ def main():
         except:
             print("skipping for ",ticker)
         
-# Continuous execution        
+        
 starttime=time.time()
-timeout = time.time() + 60*60*1  # 60 seconds times 60 meaning the script will run for 1 hr
+timeout = time.time() + 60*60*1  
 while time.time() <= timeout:
     try:
         print("passthrough at ",time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
         main()
-        time.sleep(300 - ((time.time() - starttime) % 300.0)) # 300 second interval between each new execution
+        time.sleep(300 - ((time.time() - starttime) % 300.0)) 
     except KeyboardInterrupt:
         print('\n\nKeyboard exception received. Exiting.')
         exit()
